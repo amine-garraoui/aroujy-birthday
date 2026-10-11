@@ -158,6 +158,9 @@
     }
     .music-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.7; }
     .music-card audio { display: block; width: 100%; min-height: 48px; }
+    .music-card #musicStatus:empty,
+    #startMusicButton[hidden] { display: none; }
+    .music-card #musicStatus { margin: 12px 0; }
     .gallery {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -299,7 +302,6 @@
 <body>
   <main class="page">
     <header class="topbar wrap">
-      <span class="monogram">♡ A + A ♡</span>
       <span>A little something, made with love</span>
     </header>
 
@@ -317,10 +319,12 @@
         <p class="eyebrow">A song for your birthday</p>
         <h2 id="music-title">Press play and enjoy 🎶</h2>
         <p>A little music gift, just for you. ♡</p>
-        <audio controls preload="metadata" aria-label="Birthday song for Aroujy">
+        <audio id="birthdaySong" controls autoplay preload="auto" aria-label="Birthday song for Aroujy">
           <source src="birthday-song.mp3" type="audio/mpeg">
           Your browser does not support audio playback.
         </audio>
+        <p id="musicStatus" role="status" aria-live="polite"></p>
+        <button class="button" id="startMusicButton" type="button" hidden>Tap to play the birthday song 🎶</button>
       </div>
     </section>
 
@@ -386,6 +390,9 @@
   <script>
     const wishButton = document.getElementById("wishButton");
     const birthdayWish = document.getElementById("birthdayWish");
+    const birthdaySong = document.getElementById("birthdaySong");
+    const startMusicButton = document.getElementById("startMusicButton");
+    const musicStatus = document.getElementById("musicStatus");
 
     wishButton.addEventListener("click", () => {
       birthdayWish.hidden = false;
@@ -405,6 +412,25 @@
         }, i * 75);
       }
     }, { once: true });
+
+    async function playBirthdaySong() {
+      try {
+        await birthdaySong.play();
+        startMusicButton.hidden = true;
+        musicStatus.textContent = "";
+      } catch (error) {
+        startMusicButton.hidden = false;
+        if (error.name === "NotAllowedError") {
+          musicStatus.textContent = "Your browser needs one tap before it can play music.";
+        } else {
+          musicStatus.textContent = "The song could not start. Tap the player to try again.";
+          console.error("Could not start the birthday song:", error);
+        }
+      }
+    }
+
+    startMusicButton.addEventListener("click", playBirthdaySong);
+    playBirthdaySong();
   </script>
 </body>
 </html>
